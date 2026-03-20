@@ -1,5 +1,5 @@
 """
-This is the main authentication logic for tm1-auth
+Core authentication logic for tm1-auth.
 """
 
 import os
@@ -7,6 +7,11 @@ from typing import Optional
 
 from .browser import find_browser_executable, get_default_profile_dir
 from .exceptions import AuthenticationError, PassportTimeoutError
+
+try:
+    from playwright.sync_api import sync_playwright
+except ImportError:
+    sync_playwright = None
 
 
 _PASSPORT_COOKIE_NAME = "cam_passport"
@@ -39,7 +44,9 @@ def get_cam_passport(
                             isolated sessions, always prompts for login.
 
                           Use a shared profile only if you intentionally want
-                          SSO behaviour across environments.
+                          SSO behaviour across environments. Use separate
+                          profiles if environments have different credentials
+                          or you want explicit login control.
 
         timeout_seconds:  Seconds to wait for login before raising
                           PassportTimeoutError. Default 90.
@@ -55,10 +62,28 @@ def get_cam_passport(
     Raises:
         AuthenticationError:   If the browser fails to launch.
         PassportTimeoutError:  If no passport is detected within timeout_seconds.
+
+    Example — isolated sessions (independent credentials per environment):
+        >>> stg_passport = get_cam_passport(
+        ...     auth_url="https://stg-server/ibmcognos/bi/v1/disp",
+        ...     profile_dir="~/.tm1_auth/stg_profile",
+        ... )
+        >>> prd_passport = get_cam_passport(
+        ...     auth_url="https://prd-server/ibmcognos/bi/v1/disp",
+        ...     profile_dir="~/.tm1_auth/prd_profile",
+        ... )
+
+    Example — shared session (same IdP, SSO carries over):
+        >>> stg_passport = get_cam_passport(
+        ...     auth_url="https://stg-server/ibmcognos/bi/v1/disp",
+        ... )
+        >>> prd_passport = get_cam_passport(
+        ...     auth_url="https://prd-server/ibmcognos/bi/v1/disp",
+        ... )
+        >>> # If your IdP supports SSO, the second call may not prompt for login.
+        >>> # This is not guaranteed — it depends entirely on your IdP configuration.
     """
-    try:
-        from playwright.sync_api import sync_playwright
-    except ImportError:
+    if sync_playwright is None:
         raise ImportError(
             "Playwright is required. Install it with:\n"
             "  pip install playwright\n"
