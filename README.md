@@ -9,7 +9,7 @@ TM1py requires a `cam_passport` to connect to CAM-secured environments, but obta
 ## Features
 
 - Automated CAM passport retrieval via a browser login window
-- Works alongside TM1py — pass the retrieved passport directly to `TM1Service`
+- Works alongside TM1py - pass the retrieved passport directly to `TM1Service`
 - Supports system browsers (Edge, Chrome) as well as Playwright's bundled Chromium
 - Optional in-memory passport caching via `PassportCache`
 - Cross-platform: Windows, macOS, Linux
