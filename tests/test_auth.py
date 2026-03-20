@@ -278,3 +278,73 @@ class TestFindBrowserExecutable:
         result = get_default_profile_dir()
         assert result.startswith(os.path.expanduser("~"))
         assert "tm1_auth" in result
+
+
+# ── Tests: KeyringCache ───────────────────────────────────────────────────────
+
+class TestKeyringCache:
+
+    def test_get_returns_none_when_no_entry(self):
+        from tm1_auth.keyring_cache import KeyringCache
+        with patch("keyring.get_password", return_value=None):
+            cache = KeyringCache()
+            assert cache.get("https://server/auth") is None
+
+    def test_get_returns_stored_passport(self):
+        from tm1_auth.keyring_cache import KeyringCache
+        with patch("keyring.get_password", return_value="my_passport"):
+            cache = KeyringCache()
+            assert cache.get("https://server/auth") == "my_passport"
+
+    def test_set_calls_keyring(self):
+        from tm1_auth.keyring_cache import KeyringCache
+        with patch("keyring.set_password") as mock_set:
+            cache = KeyringCache()
+            cache.set("https://server/auth", "my_passport")
+            mock_set.assert_called_once_with("tm1-auth", "https://server/auth", "my_passport")
+
+    def test_invalidate_calls_keyring_delete(self):
+        from tm1_auth.keyring_cache import KeyringCache
+        with patch("keyring.delete_password") as mock_del:
+            cache = KeyringCache()
+            cache.invalidate("https://server/auth")
+            mock_del.assert_called_once_with("tm1-auth", "https://server/auth")
+
+    def test_invalidate_ignores_missing_entry(self):
+        from tm1_auth.keyring_cache import KeyringCache
+        import keyring.errors
+        with patch("keyring.delete_password",
+                   side_effect=keyring.errors.PasswordDeleteError("not found")):
+            cache = KeyringCache()
+            cache.invalidate("https://server/auth")  # should not raise
+
+    def test_get_returns_none_on_keyring_error(self):
+        from tm1_auth.keyring_cache import KeyringCache
+        with patch("keyring.get_password", side_effect=Exception("keyring unavailable")):
+            cache = KeyringCache()
+            assert cache.get("https://server/auth") is None
+
+    def test_custom_service_name(self):
+        from tm1_auth.keyring_cache import KeyringCache
+        with patch("keyring.set_password") as mock_set:
+            cache = KeyringCache(service="my-app")
+            cache.set("https://server/auth", "my_passport")
+            mock_set.assert_called_once_with("my-app", "https://server/auth", "my_passport")
+
+    def test_separate_entries_per_url(self):
+        from tm1_auth.keyring_cache import KeyringCache
+        stored = {}
+
+        def mock_set(service, url, passport):
+            stored[url] = passport
+
+        def mock_get(service, url):
+            return stored.get(url)
+
+        with patch("keyring.set_password", side_effect=mock_set), \
+             patch("keyring.get_password", side_effect=mock_get):
+            cache = KeyringCache()
+            cache.set("https://stg/auth", "stg_passport")
+            cache.set("https://prd/auth", "prd_passport")
+            assert cache.get("https://stg/auth") == "stg_passport"
+            assert cache.get("https://prd/auth") == "prd_passport"
