@@ -52,33 +52,45 @@ A browser window opens, you log in (including MFA), and the passport is captured
 ---
 
 ## Multiple environments
-
-If your STG and PRD environments share the same identity provider, you only need to authenticate once. The shared browser profile means the IdP session (e.g. Okta) carries over — the second environment logs in silently with no MFA prompt.
-
+ 
+By default all calls share the same browser profile (`~/.tm1_auth/browser_profile`).
+Whether this is useful depends entirely on your setup:
+ 
+**Isolated sessions (recommended if environments have different credentials):**
+ 
 ```python
-from tm1_auth import get_cam_passport
-from TM1py import TM1Service
-
 stg_passport = get_cam_passport(
-    auth_url="https://stg-cognos-server/ibmcognos/bi/v1/disp"
+    auth_url="https://stg-cognos/ibmcognos/bi/v1/disp",
+    profile_dir="~/.tm1_auth/stg",
 )
-# MFA prompt appears once here ↑
-
+ 
 prd_passport = get_cam_passport(
-    auth_url="https://prd-cognos-server/ibmcognos/bi/v1/disp"
+    auth_url="https://prd-cognos/ibmcognos/bi/v1/disp",
+    profile_dir="~/.tm1_auth/prd",
 )
-# Silent login here ↑ — IdP session already established
-
-with TM1Service(address="stg-tm1", port=5001,
-                cam_passport=stg_passport, ssl=True) as tm1:
-    ...
-
-with TM1Service(address="prd-tm1", port=5001,
-                cam_passport=prd_passport, ssl=True) as tm1:
-    ...
 ```
-
----
+ 
+Each call gets its own browser session and will prompt for login independently.
+ 
+**Shared session (if environments share the same identity provider):**
+ 
+```python
+stg_passport = get_cam_passport(
+    auth_url="https://stg-cognos/ibmcognos/bi/v1/disp",
+)
+ 
+prd_passport = get_cam_passport(
+    auth_url="https://prd-cognos/ibmcognos/bi/v1/disp",
+)
+```
+ 
+Both calls use the default shared profile. If your identity provider (e.g. Okta,
+Azure AD) supports SSO, the second call may complete without prompting for
+credentials or MFA again — the IdP session cookie from the first login is
+already in the shared profile.
+ 
+This is not guaranteed. It depends entirely on your IdP configuration and session
+policies. Do not rely on this behaviour if environments have different credentials.
 
 ## API reference
 
