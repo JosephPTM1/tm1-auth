@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "tm1-auth"
+version = "0.1.0"
+description = "CAM passport authentication for IBM Planning Analytics (TM1) with MFA support"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.8"
+keywords = ["tm1", "planning-analytics", "ibm", "cognos", "cam", "authentication", "mfa"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "playwright>=1.40",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-mock>=3.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/JosephPTM1/tm1-auth"
+Repository = "https://github.comJosephPTM1/tm1-auth"
+Issues = "https://github.com/JosephPTM1/tm1-auth/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["tm1_auth*"]
