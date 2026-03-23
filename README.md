@@ -182,14 +182,6 @@ Both inherit from `AuthenticationError`. Catch `AuthenticationError` to handle a
 
 ---
 
-## Roadmap
-
-- [ ] Windows integrated authentication (Kerberos / NTLM)
-- [ ] API key authentication (Planning Analytics on Cloud)
-- [ ] Async support
-
----
-
 ## Contributing
 
 Contributions welcome. Please open an issue before submitting a pull request for significant changes.

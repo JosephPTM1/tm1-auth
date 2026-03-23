@@ -1,5 +1,7 @@
 from typing import Optional
 
+# TODO: Improve commenting in this file for a docstring for the class and its methods.
+
 _SERVICE = "tm1-auth"
 
 class KeyringCache:
