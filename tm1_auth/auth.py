@@ -4,6 +4,7 @@ Core authentication logic for tm1-auth.
 
 import os
 from typing import Optional
+import logging
 
 from .browser import find_browser_executable, get_default_profile_dir
 from .exceptions import AuthenticationError, PassportTimeoutError
@@ -13,6 +14,7 @@ try:
 except ImportError:
     sync_playwright = None
 
+logger = logging.getLogger("tm1_auth")
 
 _PASSPORT_COOKIE_NAME = "cam_passport"
 
@@ -97,10 +99,10 @@ def get_cam_passport(
 
     if verbose:
         browser_name = "system browser" if exe else "Playwright Chromium"
-        print(f"[tm1-auth] Launching {browser_name}...")
-        print(f"[tm1-auth] Profile: {profile_dir}")
-        print(f"[tm1-auth] Navigating to: {auth_url}")
-        print(f"[tm1-auth] Waiting for login (timeout: {timeout_seconds}s)...")
+        logger.debug(f"[tm1-auth] Launching {browser_name}...")
+        logger.debug(f"[tm1-auth] Profile: {profile_dir}")
+        logger.debug(f"[tm1-auth] Navigating to: {auth_url}")
+        logger.debug(f"[tm1-auth] Waiting for login (timeout: {timeout_seconds}s)...")
 
     poll_interval_ms = 2000
     max_polls = (timeout_seconds * 1000) // poll_interval_ms
