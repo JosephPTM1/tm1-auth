@@ -36,7 +36,7 @@ dev = [
 
 [project.urls]
 Homepage = "https://github.com/JosephPTM1/tm1-auth"
-Repository = "https://github.comJosephPTM1/tm1-auth"
+Repository = "https://github.com/JosephPTM1/tm1-auth"
 Issues = "https://github.com/JosephPTM1/tm1-auth/issues"
 
 [tool.setuptools.packages.find]

@@ -245,9 +245,9 @@ class TestPassportCache:
     def test_separate_keys_for_different_urls(self):
         from tm1_auth.cache import PassportCache
         cache = PassportCache()
-        cache.set("https://stg/auth", "stg_passport")
+        cache.set("https://dev/auth", "dev_passport")
         cache.set("https://prd/auth", "prd_passport")
-        assert cache.get("https://stg/auth") == "stg_passport"
+        assert cache.get("https://dev/auth") == "dev_passport"
         assert cache.get("https://prd/auth") == "prd_passport"
 
 
@@ -344,7 +344,7 @@ class TestKeyringCache:
         with patch("keyring.set_password", side_effect=mock_set), \
              patch("keyring.get_password", side_effect=mock_get):
             cache = KeyringCache()
-            cache.set("https://stg/auth", "stg_passport")
+            cache.set("https://dev/auth", "dev_passport")
             cache.set("https://prd/auth", "prd_passport")
-            assert cache.get("https://stg/auth") == "stg_passport"
+            assert cache.get("https://dev/auth") == "dev_passport"
             assert cache.get("https://prd/auth") == "prd_passport"

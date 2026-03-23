@@ -66,9 +66,9 @@ def get_cam_passport(
         PassportTimeoutError:  If no passport is detected within timeout_seconds.
 
     Example - isolated sessions (independent credentials per environment):
-        >>> stg_passport = get_cam_passport(
-        ...     auth_url="https://stg-server/ibmcognos/bi/v1/disp",
-        ...     profile_dir="~/.tm1_auth/stg_profile",
+        >>> dev_passport = get_cam_passport(
+        ...     auth_url="https://dev-server/ibmcognos/bi/v1/disp",
+        ...     profile_dir="~/.tm1_auth/dev_profile",
         ... )
         >>> prd_passport = get_cam_passport(
         ...     auth_url="https://prd-server/ibmcognos/bi/v1/disp",
@@ -76,8 +76,8 @@ def get_cam_passport(
         ... )
 
     Example - shared session (same IdP, SSO carries over):
-        >>> stg_passport = get_cam_passport(
-        ...     auth_url="https://stg-server/ibmcognos/bi/v1/disp",
+        >>> dev_passport = get_cam_passport(
+        ...     auth_url="https://dev-server/ibmcognos/bi/v1/disp",
         ... )
         >>> prd_passport = get_cam_passport(
         ...     auth_url="https://prd-server/ibmcognos/bi/v1/disp",

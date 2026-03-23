@@ -62,9 +62,9 @@ By default all calls share the same browser profile (`~/.tm1_auth/browser_profil
 **Isolated sessions** - use when environments have different credentials, or you want explicit login control for each:
 
 ```python
-stg_passport = get_cam_passport(
-    auth_url="https://stg-cognos/ibmcognos/bi/v1/disp",
-    profile_dir="~/.tm1_auth/stg",
+dev_passport = get_cam_passport(
+    auth_url="https://dev-cognos/ibmcognos/bi/v1/disp",
+    profile_dir="~/.tm1_auth/dev",
 )
 
 prd_passport = get_cam_passport(
@@ -78,8 +78,8 @@ Each call gets its own browser session and will prompt for login independently.
 **Shared session** - use when environments share the same identity provider and you want to avoid repeated logins:
 
 ```python
-stg_passport = get_cam_passport(
-    auth_url="https://stg-cognos/ibmcognos/bi/v1/disp",
+dev_passport = get_cam_passport(
+    auth_url="https://dev-cognos/ibmcognos/bi/v1/disp",
 )
 
 prd_passport = get_cam_passport(
