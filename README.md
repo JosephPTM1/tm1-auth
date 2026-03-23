@@ -133,7 +133,7 @@ except Exception:
 get_cam_passport(
     auth_url: str,
     profile_dir: str | None = None,
-    timeout_seconds: int = 90,
+    timeout_seconds: int = 180,
     headless: bool = False,
     executable_path: str | None = None,
     verbose: bool = True,
