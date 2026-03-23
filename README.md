@@ -59,7 +59,7 @@ A browser window opens, you complete the login flow (including MFA), and the pas
 
 By default all calls share the same browser profile (`~/.tm1_auth/browser_profile`). Whether this is useful depends on your setup.
 
-**Isolated sessions** — use when environments have different credentials, or you want explicit login control for each:
+**Isolated sessions** - use when environments have different credentials, or you want explicit login control for each:
 
 ```python
 stg_passport = get_cam_passport(
@@ -75,7 +75,7 @@ prd_passport = get_cam_passport(
 
 Each call gets its own browser session and will prompt for login independently.
 
-**Shared session** — use when environments share the same identity provider and you want to avoid repeated logins:
+**Shared session** - use when environments share the same identity provider and you want to avoid repeated logins:
 
 ```python
 stg_passport = get_cam_passport(
@@ -87,7 +87,7 @@ prd_passport = get_cam_passport(
 )
 ```
 
-Both calls use the default shared profile. If your identity provider supports SSO, the second call may complete without prompting for credentials or MFA again. This is not guaranteed — it depends entirely on your IdP configuration and session policies.
+Both calls use the default shared profile. If your identity provider supports SSO, the second call may complete without prompting for credentials or MFA again. This is not guaranteed - it depends entirely on your IdP configuration and session policies.
 
 ---
 
@@ -152,8 +152,8 @@ get_cam_passport(
 **Returns:** The `cam_passport` cookie value as a string.
 
 **Raises:**
-- `AuthenticationError` — browser failed to launch or could not navigate to the auth URL
-- `PassportTimeoutError` — no passport detected within `timeout_seconds`
+- `AuthenticationError` - browser failed to launch or could not navigate to the auth URL
+- `PassportTimeoutError` - no passport detected within `timeout_seconds`
 
 ---
 

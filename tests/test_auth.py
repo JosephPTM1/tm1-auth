@@ -14,7 +14,7 @@ from unittest.mock import MagicMock, patch, call
 def mock_playwright():
     """
     Returns a mock sync_playwright context manager that simulates a successful
-    login — a cam_passport cookie appears on the first poll.
+    login - a cam_passport cookie appears on the first poll.
     """
     mock_cookie = {"name": "cam_passport", "value": "test_passport_value_abc123"}
 
@@ -39,7 +39,7 @@ def mock_playwright():
 
 @pytest.fixture
 def mock_playwright_timeout():
-    """Simulates a login timeout — no cam_passport cookie ever appears."""
+    """Simulates a login timeout - no cam_passport cookie ever appears."""
     mock_context = MagicMock()
     mock_context.cookies.return_value = [
         {"name": "some_other_cookie", "value": "irrelevant"}

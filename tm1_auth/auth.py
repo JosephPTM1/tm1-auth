@@ -20,7 +20,7 @@ _PASSPORT_COOKIE_NAME = "cam_passport"
 def get_cam_passport(
     auth_url: str,
     profile_dir: Optional[str] = None,
-    timeout_seconds: int = 90,
+    timeout_seconds: int = 180,
     headless: bool = False,
     executable_path: Optional[str] = None,
     verbose: bool = True,
@@ -49,7 +49,7 @@ def get_cam_passport(
                           or you want explicit login control.
 
         timeout_seconds:  Seconds to wait for login before raising
-                          PassportTimeoutError. Default 90.
+                          PassportTimeoutError. Default 180.
         headless:         Run without a visible browser window. Not recommended
                           for MFA flows. Default False.
         executable_path:  Path to a specific browser executable. If not set,
@@ -63,7 +63,7 @@ def get_cam_passport(
         AuthenticationError:   If the browser fails to launch.
         PassportTimeoutError:  If no passport is detected within timeout_seconds.
 
-    Example — isolated sessions (independent credentials per environment):
+    Example - isolated sessions (independent credentials per environment):
         >>> stg_passport = get_cam_passport(
         ...     auth_url="https://stg-server/ibmcognos/bi/v1/disp",
         ...     profile_dir="~/.tm1_auth/stg_profile",
@@ -73,7 +73,7 @@ def get_cam_passport(
         ...     profile_dir="~/.tm1_auth/prd_profile",
         ... )
 
-    Example — shared session (same IdP, SSO carries over):
+    Example - shared session (same IdP, SSO carries over):
         >>> stg_passport = get_cam_passport(
         ...     auth_url="https://stg-server/ibmcognos/bi/v1/disp",
         ... )
@@ -81,7 +81,7 @@ def get_cam_passport(
         ...     auth_url="https://prd-server/ibmcognos/bi/v1/disp",
         ... )
         >>> # If your IdP supports SSO, the second call may not prompt for login.
-        >>> # This is not guaranteed — it depends entirely on your IdP configuration.
+        >>> # This is not guaranteed - it depends entirely on your IdP configuration.
     """
     if sync_playwright is None:
         raise ImportError(
@@ -116,6 +116,8 @@ def get_cam_passport(
 
         try:
             context = p.chromium.launch_persistent_context(**launch_kwargs)
+            if context.pages:
+                context.pages[0].close() # Close the default blank page that opens with the context
         except Exception as e:
             raise AuthenticationError(
                 f"Browser failed to launch: {e}\n"

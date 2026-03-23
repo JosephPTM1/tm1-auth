@@ -1,7 +1,7 @@
 """
 Optional in-memory passport cache.
 
-Useful for scripts that connect to TM1 multiple times — avoids repeated
+Useful for scripts that connect to TM1 multiple times - avoids repeated
 browser logins within the same Python process. Not used automatically;
 opt in by using PassportCache explicitly.
 """
