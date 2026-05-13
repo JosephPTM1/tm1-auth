@@ -9,9 +9,10 @@ TM1py requires a `cam_passport` to connect to CAM-secured environments, but obta
 ## Features
 
 - Automated CAM passport retrieval via a browser login window
-- Works alongside TM1py - pass the retrieved passport directly to `TM1Service`
+- Works alongside TM1py — pass the retrieved passport directly to `TM1Service`
 - Supports system browsers (Edge, Chrome) as well as Playwright's bundled Chromium
-- Optional in-memory passport caching via `PassportCache`
+- Persistent passport caching via `KeyringCache` (OS credential manager)
+- In-memory passport caching via `PassportCache`
 - Cross-platform: Windows, macOS, Linux
 
 ---
@@ -23,7 +24,7 @@ TM1py requires a `cam_passport` to connect to CAM-secured environments, but obta
 
 ```bash
 pip install playwright
-playwright install chromium
+python -m playwright install chromium
 ```
 
 ---
@@ -59,7 +60,7 @@ A browser window opens, you complete the login flow (including MFA), and the pas
 
 By default all calls share the same browser profile (`~/.tm1_auth/browser_profile`). Whether this is useful depends on your setup.
 
-**Isolated sessions** - use when environments have different credentials, or you want explicit login control for each:
+**Isolated sessions** — use when environments have different credentials, or you want explicit login control for each:
 
 ```python
 dev_passport = get_cam_passport(
@@ -75,7 +76,7 @@ prd_passport = get_cam_passport(
 
 Each call gets its own browser session and will prompt for login independently.
 
-**Shared session** - use when environments share the same identity provider and you want to avoid repeated logins:
+**Shared session** — use when environments share the same identity provider and you want to avoid repeated logins:
 
 ```python
 dev_passport = get_cam_passport(
@@ -87,17 +88,58 @@ prd_passport = get_cam_passport(
 )
 ```
 
-Both calls use the default shared profile. If your identity provider supports SSO, the second call may complete without prompting for credentials or MFA again. This is not guaranteed - it depends entirely on your IdP configuration and session policies.
+Both calls use the default shared profile. If your identity provider supports SSO, the second call may complete without prompting for credentials or MFA again. This is not guaranteed — it depends entirely on your IdP configuration and session policies.
 
 ---
 
 ## Caching passports
 
-If you connect to TM1 multiple times within the same script, use `PassportCache` to avoid repeated browser logins:
+### Persistent cache (recommended for IDE use)
+
+`KeyringCache` stores passports in the OS credential manager (Windows Credential
+Manager, macOS Keychain, Linux Secret Service). Passports survive process restarts
+so the browser only opens when a passport has actually expired — not every time you
+run your script.
 
 ```python
-from tm1_auth import get_cam_passport
-from tm1_auth.cache import PassportCache
+from tm1_auth import get_cam_passport, KeyringCache
+from TM1py import TM1Service
+
+cache    = KeyringCache()
+auth_url = "https://your-cognos/ibmcognos/bi/v1/disp"
+
+passport = cache.get(auth_url)
+if not passport:
+    passport = get_cam_passport(auth_url)
+    cache.set(auth_url, passport)
+
+with TM1Service(address="tm1-server", port=5001,
+                cam_passport=passport, ssl=True) as tm1:
+    print(tm1.server.get_product_version())
+```
+
+If a passport is rejected by TM1py, invalidate it and re-authenticate:
+
+```python
+try:
+    tm1 = TM1Service(address="tm1-server", port=5001,
+                     cam_passport=passport, ssl=True)
+except Exception:
+    cache.invalidate(auth_url)
+    passport = get_cam_passport(auth_url)
+    cache.set(auth_url, passport)
+    tm1 = TM1Service(address="tm1-server", port=5001,
+                     cam_passport=passport, ssl=True)
+```
+
+### In-memory cache
+
+`PassportCache` is an alternative that keeps passports in memory only. Useful
+for long-running scripts that connect to TM1 multiple times in one session, but
+does not persist across process restarts.
+
+```python
+from tm1_auth import get_cam_passport, PassportCache
 
 cache = PassportCache(ttl_seconds=3600)
 
@@ -109,20 +151,6 @@ def get_passport(auth_url):
     return passport
 ```
 
-If a cached passport is rejected by TM1py, call `cache.invalidate(auth_url)` and re-authenticate:
-
-```python
-try:
-    tm1 = TM1Service(address=address, port=port,
-                     cam_passport=get_passport(auth_url), ssl=True)
-except Exception:
-    cache.invalidate(auth_url)
-    tm1 = TM1Service(address=address, port=port,
-                     cam_passport=get_passport(auth_url), ssl=True)
-```
-
-`PassportCache` is in-memory only and does not persist across Python processes.
-
 ---
 
 ## API reference
@@ -133,7 +161,7 @@ except Exception:
 get_cam_passport(
     auth_url: str,
     profile_dir: str | None = None,
-    timeout_seconds: int = 180,
+    timeout_seconds: int = 90,
     headless: bool = False,
     executable_path: str | None = None,
     verbose: bool = True,
@@ -152,8 +180,24 @@ get_cam_passport(
 **Returns:** The `cam_passport` cookie value as a string.
 
 **Raises:**
-- `AuthenticationError` - browser failed to launch or could not navigate to the auth URL
-- `PassportTimeoutError` - no passport detected within `timeout_seconds`
+- `AuthenticationError` — browser failed to launch or could not navigate to the auth URL
+- `PassportTimeoutError` — no passport detected within `timeout_seconds`
+
+---
+
+### `KeyringCache`
+
+```python
+KeyringCache(service: str = "tm1-auth")
+```
+
+Persistent cache backed by the OS credential manager. Survives process restarts.
+
+| Method | Description |
+|---|---|
+| `get(auth_url)` | Return stored passport or `None` if not found |
+| `set(auth_url, passport)` | Store a passport in the OS credential manager |
+| `invalidate(auth_url)` | Remove a specific entry |
 
 ---
 
@@ -162,6 +206,8 @@ get_cam_passport(
 ```python
 PassportCache(ttl_seconds: int = 3600)
 ```
+
+In-memory cache. Does not persist across process restarts.
 
 | Method | Description |
 |---|---|
